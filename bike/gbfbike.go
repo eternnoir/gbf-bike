@@ -71,7 +71,7 @@ func (gb *GbfBike) Start() error {
 		}
 		btInfo, err := ConvertGBFBattleInfo(twit.Text)
 		if err != nil {
-			log.Errorf("Cannot convert %s to battle Info. Error %s", twit.Text, err.Error())
+			log.Warnf("Cannot convert %s to battle Info. Error %s", twit.Text, err.Error())
 			continue
 		}
 		btInfo.Id = twit.ID

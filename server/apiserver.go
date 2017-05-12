@@ -59,19 +59,22 @@ func (api *ApiServer) NewBattleInfo(battleInfo *bike.BattleInfo) error {
 			delete(api.revChanList, infoCh)
 			continue
 		}
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					log.Errorf("Recovery in %#v. ", r)
-				}
-			}()
-			select {
-			case infoCh <- battleInfo:
-				log.Debugf("Push battle info to channel %#v", battleInfo)
-			}
-		}()
+		go fireBattleInfo(infoCh, battleInfo)
 	}
 	return nil
+}
+
+func fireBattleInfo(ch chan *bike.BattleInfo, battleInfo *bike.BattleInfo) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovery in %#v. ", r)
+		}
+	}()
+	select {
+	case ch <- battleInfo:
+		log.Debugf("Push battle info to channel %#v", battleInfo)
+	}
+
 }
 
 func (api *ApiServer) query(c echo.Context) error {
@@ -87,18 +90,17 @@ func (api *ApiServer) query(c echo.Context) error {
 	if err != nil {
 		return ErrConvertTimeout
 	}
-	recCh := make(chan (*bike.BattleInfo), 50)
+	recCh := make(chan (*bike.BattleInfo))
 	api.revChanList[recCh] = true
 	stopCh := make(chan bool)
+	defer close(stopCh)
+	defer close(recCh)
 	go func() {
 		time.Sleep(time.Second * time.Duration(timeout))
 		stopCh <- true
 	}()
 	result := api.pushBattleToList(level, mobs, recCh, stopCh)
-	defer func() {
-		close(stopCh)
-		close(recCh)
-	}()
+
 	return c.JSON(http.StatusOK, result)
 }
 
@@ -123,6 +125,7 @@ func (api *ApiServer) webSocket(c echo.Context) error {
 			err := ws.WriteJSON(mission)
 			if err != nil {
 				log.Errorf("WebSocket write error. %s", err.Error())
+				return err
 			}
 		}
 	}
