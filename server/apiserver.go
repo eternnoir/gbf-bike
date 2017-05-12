@@ -72,17 +72,19 @@ func (api *ApiServer) query(c echo.Context) error {
 	if err != nil {
 		return ErrConvertTimeout
 	}
-	recCh := make(chan (*bike.BattleInfo))
+	recCh := make(chan (*bike.BattleInfo), 50)
 	api.revChanList[recCh] = true
 	stopCh := make(chan bool)
 	go func() {
-
 		time.Sleep(time.Second * time.Duration(timeout))
 		stopCh <- true
 	}()
 	result := api.pushBattleToList(level, mobs, recCh, stopCh)
-	close(recCh)
 	close(stopCh)
+	go func() {
+		time.Sleep(3 * time.Second)
+		close(recCh)
+	}()
 	return c.JSON(http.StatusOK, result)
 }
 
