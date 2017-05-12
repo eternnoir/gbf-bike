@@ -29,6 +29,12 @@ var (
 	}
 )
 
+var welcomeInfo = map[string]interface{}{
+	"welcome": "Welcom use gbf bike.",
+	"desc":    "GBF captains need a bike. `gbf-bike` helps captain find raid's room id from twitter.",
+	"usage":   "https://github.com/eternnoir/gbf-bike",
+}
+
 var DefaultTimeout = "5"
 
 func NewApi(port string) *ApiServer {
@@ -46,6 +52,7 @@ type ApiServer struct {
 
 func (api *ApiServer) Start() error {
 	e := api.hs
+	e.GET("/", api.welcome)
 	e.GET("/query", api.query)
 	e.GET("/ws", api.webSocket)
 	e.Logger.Fatal(e.Start(":" + api.port))
@@ -77,6 +84,9 @@ func fireBattleInfo(ch chan *bike.BattleInfo, battleInfo *bike.BattleInfo) {
 
 }
 
+func (api *ApiServer) welcome(c echo.Context) error {
+	return c.JSON(http.StatusOK, welcomeInfo)
+}
 func (api *ApiServer) query(c echo.Context) error {
 	// Get team and member from the query string
 	level := c.QueryParam("level")
