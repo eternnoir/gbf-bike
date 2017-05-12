@@ -111,7 +111,7 @@ func (api *ApiServer) webSocket(c echo.Context) error {
 	defer ws.Close()
 	level := convertStringMap(c.QueryParam("level"))
 	mobs := convertStringMap(c.QueryParam("mobs"))
-	recCh := make(chan (*bike.BattleInfo), 50)
+	recCh := make(chan (*bike.BattleInfo))
 	defer func() {
 		close(recCh)
 		api.revChanList[recCh] = false
