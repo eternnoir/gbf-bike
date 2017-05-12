@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/eternnoir/gbf-bike/bike"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
@@ -19,6 +20,13 @@ var log = logrus.New().WithFields(logrus.Fields{
 
 var (
 	ErrConvertTimeout = errors.New("Can not convert timeout value")
+)
+var (
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 )
 
 var DefaultTimeout = "5"
@@ -39,6 +47,7 @@ type ApiServer struct {
 func (api *ApiServer) Start() error {
 	e := api.hs
 	e.GET("/query", api.query)
+	e.GET("/ws", api.webSocket)
 	e.Logger.Fatal(e.Start(":" + api.port))
 	return nil
 }
@@ -69,6 +78,7 @@ func (api *ApiServer) query(c echo.Context) error {
 	// Get team and member from the query string
 	level := c.QueryParam("level")
 	mobs := c.QueryParam("mobs")
+	log.Warn(level, mobs)
 	timeoutStr := c.QueryParam("timeout")
 	if timeoutStr == "" {
 		timeoutStr = DefaultTimeout
@@ -85,9 +95,37 @@ func (api *ApiServer) query(c echo.Context) error {
 		stopCh <- true
 	}()
 	result := api.pushBattleToList(level, mobs, recCh, stopCh)
-	close(stopCh)
-	close(recCh)
+	defer func() {
+		close(stopCh)
+		close(recCh)
+	}()
 	return c.JSON(http.StatusOK, result)
+}
+
+func (api *ApiServer) webSocket(c echo.Context) error {
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	defer ws.Close()
+	level := convertStringMap(c.QueryParam("level"))
+	mobs := convertStringMap(c.QueryParam("mobs"))
+	recCh := make(chan (*bike.BattleInfo), 50)
+	defer func() {
+		close(recCh)
+		api.revChanList[recCh] = false
+	}()
+	api.revChanList[recCh] = true
+	for {
+		mission := <-recCh
+		if isWantedMission(level, mobs, mission) {
+			err := ws.WriteJSON(mission)
+			if err != nil {
+				log.Errorf("WebSocket write error. %s", err.Error())
+			}
+		}
+	}
 }
 
 func (api *ApiServer) pushBattleToList(level, mobs string, ch chan (*bike.BattleInfo), stopCh chan bool) []*bike.BattleInfo {
@@ -134,7 +172,7 @@ func convertStringMap(mobstr string) map[string]struct{} {
 	if mobstr == "" {
 		return make(map[string]struct{})
 	}
-	moblist := strings.Split(mobstr, ";")
+	moblist := strings.Split(mobstr, ",")
 	ret := make(map[string]struct{})
 	for _, mobname := range moblist {
 		ret[mobname] = struct{}{}
