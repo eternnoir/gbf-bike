@@ -96,7 +96,6 @@ func (api *ApiServer) query(c echo.Context) error {
 	// Get team and member from the query string
 	level := c.QueryParam("level")
 	mobs := c.QueryParam("mobs")
-	log.Warn(level, mobs)
 	timeoutStr := c.QueryParam("timeout")
 	if timeoutStr == "" {
 		timeoutStr = DefaultTimeout
