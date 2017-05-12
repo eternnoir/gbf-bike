@@ -156,5 +156,9 @@
 			"revisionTime": "2016-12-15T19:42:18Z"
 		}
 	],
-	"rootPath": "github.com/eternnoir/gbf-bike"
+	"rootPath": "github.com/eternnoir/gbf-bike",
+	"heroku": {
+		"install" : [ "./..." ],
+		"goVersion": "go1.8.1"
+	}
 }
