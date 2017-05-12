@@ -41,6 +41,10 @@ func NewApi(port string) *ApiServer {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET},
+	}))
 	return &ApiServer{hs: e, revChanList: make(map[chan (*bike.BattleInfo)]bool), port: port}
 }
 
