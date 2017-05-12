@@ -13,10 +13,10 @@ var (
 )
 
 type BattleInfo struct {
-	Id      int64  `json:id`
+	Id      int64  `json:"id"`
 	Level   string `json:"level"`
 	RoomId  string `json:"roomId"`
-	MobName string `json:"mobName`
+	MobName string `json:"mobName"`
 	Url     string `json:"url"`
 }
 
