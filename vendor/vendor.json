@@ -1,5 +1,11 @@
 {
 	"comment": "",
+	"heroku": {
+		"goVersion": "go1.8.1",
+		"install": [
+			"./..."
+		]
+	},
 	"ignore": "test",
 	"package": [
 		{
@@ -50,6 +56,12 @@
 			"path": "github.com/google/go-querystring/query",
 			"revision": "53e6ce116135b80d037921a7fdd5138cf32d7a8a",
 			"revisionTime": "2017-01-11T10:11:55Z"
+		},
+		{
+			"checksumSHA1": "hEnH6sgR83Qfx7UNnphNNlelmj0=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "a91eba7f97777409bc2c443f5534d41dd20c5720",
+			"revisionTime": "2017-03-19T17:27:27Z"
 		},
 		{
 			"checksumSHA1": "BcA1++splyby+B69m8B91ErbqpM=",
@@ -156,9 +168,5 @@
 			"revisionTime": "2016-12-15T19:42:18Z"
 		}
 	],
-	"rootPath": "github.com/eternnoir/gbf-bike",
-	"heroku": {
-		"install" : [ "./..." ],
-		"goVersion": "go1.8.1"
-	}
+	"rootPath": "github.com/eternnoir/gbf-bike"
 }
