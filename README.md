@@ -73,13 +73,8 @@ By default timeout is 5 seconds.
   <p id="output"></p>
 
   <script>
-    var loc = window.location;
-    var uri = 'ws:';
 
-    if (loc.protocol === 'https:') {
-      uri = 'wss:';
-    }
-    uri = 'wss://gbf-bike.herokuapp.com/ws'
+    var uri = 'wss://gbf-bike.herokuapp.com/ws'
 
     ws = new WebSocket(uri)
 
