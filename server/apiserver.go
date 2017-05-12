@@ -33,6 +33,7 @@ var welcomeInfo = map[string]interface{}{
 	"welcome": "Welcom use gbf bike.",
 	"desc":    "GBF captains need a bike. `gbf-bike` helps captain find raid's room id from twitter.",
 	"usage":   "https://github.com/eternnoir/gbf-bike",
+	"version": "0.9487",
 }
 
 var DefaultTimeout = "5"
