@@ -74,6 +74,7 @@ func (gb *GbfBike) Start() error {
 			log.Errorf("Cannot convert %s to battle Info. Error %s", twit.Text, err.Error())
 			continue
 		}
+		btInfo.Id = twit.ID
 		go gb.triggerReceivers(btInfo)
 	}
 	return nil

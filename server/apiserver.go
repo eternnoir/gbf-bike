@@ -51,6 +51,11 @@ func (api *ApiServer) NewBattleInfo(battleInfo *bike.BattleInfo) error {
 			continue
 		}
 		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Errorf("Recovery in %#v. ", r)
+				}
+			}()
 			select {
 			case infoCh <- battleInfo:
 				log.Debugf("Push battle info to channel %#v", battleInfo)
@@ -81,10 +86,7 @@ func (api *ApiServer) query(c echo.Context) error {
 	}()
 	result := api.pushBattleToList(level, mobs, recCh, stopCh)
 	close(stopCh)
-	go func() {
-		time.Sleep(3 * time.Second)
-		close(recCh)
-	}()
+	close(recCh)
 	return c.JSON(http.StatusOK, result)
 }
 
