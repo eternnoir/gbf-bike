@@ -13,11 +13,12 @@ var (
 )
 
 type BattleInfo struct {
-	Id      int64  `json:"id"`
-	Level   string `json:"level"`
-	RoomId  string `json:"roomId"`
-	MobName string `json:"mobName"`
-	Url     string `json:"url"`
+	Id       int64  `json:"id"`
+	Level    string `json:"level"`
+	RoomId   string `json:"roomId"`
+	MobName  string `json:"mobName"`
+	Creator  string `json:"creator"`
+	CreateAt string `json:"createAt"`
 }
 
 func IsGBFBattle(msg string) bool {
@@ -45,7 +46,6 @@ func ConvertGBFBattleInfo(msg string) (*BattleInfo, error) {
 		RoomId:  strs[0],
 		Level:   strs[1],
 		MobName: strs[2],
-		Url:     strs[3],
 	}
 	return ret, nil
 }

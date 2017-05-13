@@ -1,19 +1,20 @@
 package server
 
 import (
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/eternnoir/gbf-bike/bike"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
-var log = logrus.New().WithFields(logrus.Fields{
+var log = logrus.WithFields(logrus.Fields{
 	"system": "GBF-Bike",
 	"module": "APIServer",
 })
@@ -162,7 +163,6 @@ func (api *ApiServer) pushBattleToList(level, mobs string, ch chan (*bike.Battle
 			list = append(list, bi)
 		}
 	}
-	return list
 }
 
 func isWantedMission(levels, mobs map[string]struct{}, info *bike.BattleInfo) bool {

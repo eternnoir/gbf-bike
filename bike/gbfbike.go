@@ -1,30 +1,17 @@
 package bike
 
 import (
+	"sync"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
-	"sync"
 )
 
-var log = logrus.New().WithFields(logrus.Fields{
+var log = logrus.WithFields(logrus.Fields{
 	"system": "GBF-Bike",
 	"module": "GbfBike",
 })
-
-var lvlist = []string{
-	"Lv50",
-	"Lv55",
-	"Lv60",
-	"Lv65",
-	"Lv70",
-	"Lv75",
-	"Lv80",
-	"Lv85",
-	"Lv90",
-	"Lv95",
-	"Lv100",
-}
 
 type GbfBike struct {
 	twitterClient     *twitter.Client
@@ -56,7 +43,7 @@ func (gb *GbfBike) AddBattleReceiver(r BattleInfoReceiver) {
 func (gb *GbfBike) Start() error {
 	log.Info("Start GBFBike")
 	params := &twitter.StreamFilterParams{
-		Track:         lvlist,
+		Track:         []string{"ID", "Lv"},
 		StallWarnings: twitter.Bool(true),
 	}
 	stream, err := gb.twitterClient.Streams.Filter(params)
@@ -71,10 +58,14 @@ func (gb *GbfBike) Start() error {
 		}
 		btInfo, err := ConvertGBFBattleInfo(twit.Text)
 		if err != nil {
-			log.Warnf("Cannot convert %s to battle Info. Error %s", twit.Text, err.Error())
+			log.Debugf("Cannot convert %s to battle Info. Error %s", twit.Text, err.Error())
 			continue
 		}
 		btInfo.Id = twit.ID
+		btInfo.CreateAt = twit.CreatedAt
+		if twit.User != nil {
+			btInfo.Creator = twit.User.ScreenName
+		}
 		go gb.triggerReceivers(btInfo)
 	}
 	return nil
