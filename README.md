@@ -1,5 +1,7 @@
 # GBF Bike #
 
+Granblue Fantasy(グランブルーファンタジー) twitter raid id finder.  
+
 GBF captains need a bike. `gbf-bike` helps captain find raid's room id from twitter.
 
 ## Usage ##
