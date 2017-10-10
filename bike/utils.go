@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	battlePrefix = "参加者募集！参戦ID："
-	battleReg    = regexp.MustCompile(`参加者募集！参戦ID：\w{8}\nLv\d{2}`)
+	battleReg    = regexp.MustCompile(`\w{8} :参戦ID\n参加者募集！\nLv\d{2,3}`)
 )
 
 type BattleInfo struct {
@@ -32,9 +31,8 @@ func ConvertGBFBattleInfo(msg string) (*BattleInfo, error) {
 	if !IsGBFBattle(msg) {
 		return nil, fmt.Errorf("%s is not GBF Battle", msg)
 	}
-	index := strings.Index(msg, battlePrefix)
-	msg = msg[index:]
-	msg = strings.Replace(msg, battlePrefix, "", -1)
+	msg = strings.Replace(msg, ":参戦ID", "", -1)
+	msg = strings.Replace(msg, "参加者募集！", "", -1)
 	msg = strings.Replace(msg, "\n", " ", -1)
 	msg = strings.Replace(msg, "Lv", " ", -1)
 	strs := strings.Split(msg, " ")
