@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
+	"golang.org/x/net/context"
 )
 
 var log = logrus.WithFields(logrus.Fields{
@@ -34,7 +35,7 @@ var welcomeInfo = map[string]interface{}{
 	"welcome": "Welcome use gbf bike.",
 	"desc":    "GBF captains need a bike. `gbf-bike` helps captain find raid's room id from twitter.",
 	"usage":   "https://github.com/eternnoir/gbf-bike",
-	"version": "0.9487",
+	"version": "1.9487",
 }
 
 var DefaultTimeout = "5"
@@ -108,13 +109,10 @@ func (api *ApiServer) query(c echo.Context) error {
 	recCh := make(chan (*bike.BattleInfo))
 	api.revChanList[recCh] = true
 	stopCh := make(chan bool)
-	defer close(stopCh)
 	defer close(recCh)
-	go func() {
-		time.Sleep(time.Second * time.Duration(timeout))
-		stopCh <- true
-	}()
-	result := api.pushBattleToList(level, mobs, recCh, stopCh)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+	result := api.pushBattleToList(ctx, level, mobs, recCh, stopCh)
 
 	return c.JSON(http.StatusOK, result)
 }
@@ -146,21 +144,20 @@ func (api *ApiServer) webSocket(c echo.Context) error {
 	}
 }
 
-func (api *ApiServer) pushBattleToList(level, mobs string, ch chan (*bike.BattleInfo), stopCh chan bool) []*bike.BattleInfo {
+func (api *ApiServer) pushBattleToList(ctx context.Context, level, mobs string, ch chan (*bike.BattleInfo), stopCh chan bool) []*bike.BattleInfo {
 	list := make([]*bike.BattleInfo, 0)
 	mobMap := convertStringMap(mobs)
 	levelMap := convertStringMap(level)
 	for {
 		select {
-		case <-stopCh:
+		case <-ctx.Done():
 			api.revChanList[ch] = false
 			return list
-		default:
-		}
-		bi := <-ch
-		if isWantedMission(levelMap, mobMap, bi) {
-			log.Debug("Push BattleInfo to list")
-			list = append(list, bi)
+		case bi := <-ch:
+			if isWantedMission(levelMap, mobMap, bi) {
+				log.Debug("Push BattleInfo to list")
+				list = append(list, bi)
+			}
 		}
 	}
 }
